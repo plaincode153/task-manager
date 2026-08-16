@@ -35,15 +35,27 @@ h1 {
 .task-input input {
     flex: 1;
     padding: 10px;
+    border: 0.3px solid black;
 }
 
 button {
     padding: 10px 15px;
     cursor: pointer;
+    border: 0.3px solid black;
 }
 
 #task-list {
     margin: 20px 0;
+}
+
+#task-list div {
+    border: 0.3px solid black;
+}
+
+.controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
 .filters {
@@ -54,7 +66,7 @@ button {
 .task {
     margin-top: 10px;
     display: grid;
-    grid-template-columns: 1fr auto;
+    grid-template-columns: 1fr auto auto;
     align-items: center;
     gap: 10px;
 
@@ -66,4 +78,12 @@ button {
 
 .task p {
     overflow-wrap: anywhere;
+}
+
+.completed-color {
+    background-color: rgba(253, 253, 41, 0.496);
+}
+
+.active-color {
+    background-color: rgba(174, 255, 53, 0.383);
 }
