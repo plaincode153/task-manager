@@ -80,10 +80,11 @@ button {
     overflow-wrap: anywhere;
 }
 
-.completed-color {
+.yellow-color {
     background-color: rgba(253, 253, 41, 0.496);
 }
 
-.active-color {
+.green-color {
     background-color: rgba(174, 255, 53, 0.383);
 }
+
