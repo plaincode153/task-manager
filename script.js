@@ -133,6 +133,7 @@ function handleTaskButton(event) {
 }
 
 filters.addEventListener("click", (event) => {
+            handleEditInProgress(event)
 
     if (event.target.tagName === "BUTTON") {
         handleFilterButtons(event)
@@ -151,10 +152,11 @@ function handleFilterButtons(event) {
         }
     }
 
+
     let filteredArr;
 
     if (event.target.classList.contains("complete-btn")) {
-        currentFilter = "completed"
+            currentFilter = "completed"
         filteredArr = tasks.filter((task) => {
             return task.category === "completed"
         })
@@ -230,8 +232,35 @@ const editWarningText = document.querySelector("#edit-warning p")
 
 
 function editWarningFunction() {
-    editWarningText.textContent = "Finish editing the current task first."
+    editWarningText.textContent = "Finish editing the current task first before editing another task."
 
 }
+
+function switchingFiltersWarning() {
+    editWarningText.textContent = "Finish editing the current task first before switching filters."
+
+}
+
+function handleEditInProgress(event) {
+    let check = false
+
+    for (let i = 0; i < tasks.length; i++) {
+        if (tasks[i].edit === true) {
+            check = true
+        }
+    }
+        if (check === false) {
+            return
+        }
+
+    
+    if (event.target.classList.contains("all-btn") ||
+        event.target.classList.contains("active-btn") ||
+        event.target.classList.contains("complete-btn")) {
+            switchingFiltersWarning()
+
+        }
+    }
+
 
 
