@@ -120,3 +120,14 @@ button {
     color: #991b1b;
     font-weight: 600;
 }
+
+
+.search-container {
+    margin-top: 10px;
+}
+
+#search-input {
+    width: 100%;
+    padding: 10px;
+    border: 0.3px solid black;
+}

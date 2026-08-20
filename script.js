@@ -6,11 +6,14 @@ const filters = document.querySelector(".filters")
 const editWarning = document.querySelector("#edit-warning")
 const editWarningText = document.querySelector("#edit-warning p")
 const dateInput = document.querySelector("#date-input")
+const searchInput = document.querySelector("#search-input")
 
 let tasks = []
 let taskId = 0
 
 let currentFilter = "all"
+let currentSearch = ""
+
 
 
 
@@ -187,7 +190,6 @@ function handleTaskButton(event) {
     saveTasks()
 }
 
-
 // EDITING
 
 function handleEditButton(event, task) {
@@ -225,7 +227,31 @@ function handleEditButton(event, task) {
 
 // FILTERING
 
+searchInput.addEventListener("input", (event) => {
+    currentSearch = event.target.value
+    renderTasks(handleCurrentSearch())
+})
+
+function handleCurrentSearch() {
+    if (currentFilter === "all") {
+        return tasks.filter((each) => {
+            return each.task.toLowerCase().includes(currentSearch.toLowerCase())
+        })
+    }
+    let filteredTasks = tasks.filter((each) => {
+        return each.category === currentFilter
+    })
+    return filteredTasks.filter((each) => {
+        return each.task.toLowerCase().includes(currentSearch.toLowerCase())
+    })
+}
+
 function getFilteredTasks() {
+
+    if (currentSearch.length > 0) {
+        return handleCurrentSearch()
+    }
+
     if (currentFilter === "all") {
         return tasks
     }
@@ -250,33 +276,20 @@ function handleFilterButtons(event) {
         }
     }
 
-    let filteredArr;
-
     if (event.target.classList.contains("complete-btn")) {
         currentFilter = "completed"
-
-        filteredArr = tasks.filter((task) => {
-            return task.category === "completed"
-        })
     }
 
     if (event.target.classList.contains("active-btn")) {
         currentFilter = "active"
-
-        filteredArr = tasks.filter((task) => {
-            return task.category === "active"
-        })
     }
 
     if (event.target.classList.contains("all-btn")) {
         currentFilter = "all"
-
-        filteredArr = tasks.filter((task) => {
-            return true
-        })
     }
 
-    renderTasks(filteredArr)
+    renderTasks(getFilteredTasks()
+    )
 }
 
 function handleEditInProgress(event) {
