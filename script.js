@@ -7,6 +7,7 @@ const editWarning = document.querySelector("#edit-warning")
 const editWarningText = document.querySelector("#edit-warning p")
 const dateInput = document.querySelector("#date-input")
 const searchInput = document.querySelector("#search-input")
+const sortSelection = document.querySelector("#sort-select")
 
 let tasks = []
 let taskId = 0
@@ -226,6 +227,44 @@ function handleEditButton(event, task) {
 
 
 // FILTERING
+
+let sorting = "default"
+
+sortSelection.addEventListener("change", (event) => {
+    sorting = event.target.value
+    handleSorting()
+    renderTasks(getFilteredTasks())
+})
+
+function handleSorting() {
+    if (sorting === "default") {
+        tasks.sort((a, b) => {
+            return a.id - b.id
+        });
+    }
+    if (sorting === "due-soonest") {
+        tasks.sort((a, b) => {
+            if (a.due > b.due) {
+                return -1
+            }
+            if (a.due < b.due) {
+                return 1
+            }
+        })
+    }
+    if (sorting === "due-latest") {
+        tasks.sort((a, b) => {
+            if (a.due > b.due) {
+                return 1
+            }
+            if (a.due < b.due) {
+                return -1
+            }
+        })
+    }
+}
+
+
 
 searchInput.addEventListener("input", (event) => {
     currentSearch = event.target.value

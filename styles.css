@@ -131,3 +131,17 @@ button {
     padding: 10px;
     border: 0.3px solid black;
 }
+
+
+.sort-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+#sort-select {
+    padding: 8px;
+    border: 0.3px solid black;
+    cursor: pointer;
+}
