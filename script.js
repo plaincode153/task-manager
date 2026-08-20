@@ -3,8 +3,18 @@ const taskInput = document.querySelector("#task-input")
 const addButton = document.querySelector("#add-btn")
 const taskList = document.querySelector("#task-list")
 const filters = document.querySelector(".filters")
+const editWarning = document.querySelector("#edit-warning")
+const editWarningText = document.querySelector("#edit-warning p")
+const dateInput = document.querySelector("#date-input")
 
 let tasks = []
+let taskId = 0
+
+let currentFilter = "all"
+
+
+
+// LOAD SAVED DATA
 
 let savedTasks = JSON.parse(localStorage.getItem("tasks"))
 
@@ -13,6 +23,13 @@ if (savedTasks !== null) {
     renderTasks(tasks)
 }
 
+if (localStorage.getItem("taskId") !== null) {
+    taskId = Number(localStorage.getItem("taskId"))
+}
+
+
+
+// TASK CREATION
 
 addButton.addEventListener("click", (event) => {
     let taskText = taskInput.value
@@ -21,13 +38,6 @@ addButton.addEventListener("click", (event) => {
     taskInput.value = ""
 })
 
-let taskId = 0
-
-if (localStorage.getItem("taskId") !== null) {
-    taskId = Number(localStorage.getItem("taskId"))
-}
-
-
 function createTask(taskText) {
     taskId++
     saveTaskId()
@@ -35,10 +45,57 @@ function createTask(taskText) {
     tasks.push({
         task: taskText,
         category: "active",
-        id: taskId
+        id: taskId,
+        due: dateInput.value
     })
+
     saveTasks()
 }
+
+
+// TASK RENDERING
+
+function handleDate(task) {
+
+    let dueDateParts = task.due.split("-")
+    let currentDateObj = new Date()
+    currentDateObj.setHours(0, 0, 0, 0)
+    dueDateObj = new Date(dueDateParts[0], dueDateParts[1] - 1, dueDateParts[2])
+
+    let difference = dueDateObj - currentDateObj
+    if (Number.isNaN(difference)) {
+        return ""
+    }
+    return (difference / 1000 / 60 / 60 / 24)
+
+}
+
+function handleDateMessage(day) {
+    if (day === "") {
+        return ""
+    }
+    if (day > 7) {
+        return `<p class="due-normal">Due in ${day} days</p>`
+    }
+    if (day === 7) {
+        return `<p class="due-soon">Due in ${day} days</p>`
+    }
+    if (day > 0 && day < 7) {
+        return `<p class="due-urgent">Due in ${day} days</p>`
+    }
+    if (day === 0) {
+        return `<p class="due-today">Due today!</p>`
+    }
+    if (day === -1) {
+        return `<p class="due-today">${Math.abs(day)} day overdue!</p>`
+    }
+    if (day < -1) {
+        return `<p class="due-today">${Math.abs(day)} days overdue!</p>`
+    }
+}
+
+
+
 
 function renderTasks(arrayToRender) {
     let taskHTML = arrayToRender.map((task) => {
@@ -62,6 +119,7 @@ function renderTasks(arrayToRender) {
             return `
             <div id="${task.id}" class="task ${colorClass}">
                 <input value="${task.task}" type="text">
+                ${handleDateMessage(handleDate(task))}
                 <button class="delete-btn">Delete</button>
                 <button class="submit-btn">Submit</button>
                 <button class="${buttonClass}">${buttonText}</button>
@@ -72,6 +130,7 @@ function renderTasks(arrayToRender) {
         return `
             <div id="${task.id}" class="task ${colorClass}">
                 <p>${task.task}</p>
+                ${handleDateMessage(handleDate(task))}
                 <button class="delete-btn">Delete</button>
                 <button class="edit-btn">Edit</button>
                 <button class="${buttonClass}">${buttonText}</button>
@@ -81,13 +140,16 @@ function renderTasks(arrayToRender) {
 
     taskList.innerHTML = taskHTML.join("")
 }
-console.log(tasks)
+
+
+// TASK ACTIONS
+
+
 taskList.addEventListener("click", (event) => {
     if (event.target.tagName === "BUTTON") {
         handleTaskButton(event)
     }
-}
-)
+})
 
 let findTask = (event) => {
     let taskElement = event.target.closest(".task")
@@ -116,78 +178,24 @@ function handleTaskButton(event) {
         })
 
         tasks.splice(index, 1)
-        renderTasks(filteredArr = tasks.filter((task) => {
-            if (currentFilter === "all") {
-                return true
-            }
-            return task.category === currentFilter
 
-            return task.category === currentFilter
-        }))
+        renderTasks(getFilteredTasks())
     }
 
     handleEditButton(event, task)
 
     saveTasks()
-
 }
 
-filters.addEventListener("click", (event) => {
-            handleEditInProgress(event)
 
-    if (event.target.tagName === "BUTTON") {
-        handleFilterButtons(event)
-    }
-
-})
-
-let currentFilter = "all"
-
-function handleFilterButtons(event) {
-
-    // checking whether there are edits in progreess 
-    for (let i = 0; i < tasks.length; i++) {
-        if (tasks[i].edit === true) {
-            return
-        }
-    }
-
-
-    let filteredArr;
-
-    if (event.target.classList.contains("complete-btn")) {
-            currentFilter = "completed"
-        filteredArr = tasks.filter((task) => {
-            return task.category === "completed"
-        })
-    }
-    if (event.target.classList.contains("active-btn")) {
-        currentFilter = "active"
-        filteredArr = tasks.filter((task) => {
-            return task.category === "active"
-        })
-    }
-    if (event.target.classList.contains("all-btn")) {
-        currentFilter = "all"
-        filteredArr = tasks.filter((task) => {
-            return true
-        })
-    }
-    renderTasks(filteredArr)
-}
-
-function saveTasks() {
-    localStorage.setItem("tasks", JSON.stringify(tasks))
-}
-
-function saveTaskId() {
-    localStorage.setItem("taskId", taskId)
-}
+// EDITING
 
 function handleEditButton(event, task) {
 
     if (event.target.classList.contains("edit-btn")) {
+
         let duplicate = false
+
         for (let i = 0; i < tasks.length; i++) {
             if (tasks[i].edit === true) {
                 duplicate = true
@@ -197,14 +205,7 @@ function handleEditButton(event, task) {
         }
         if (duplicate === false) {
             task.edit = true
-            let filteredTasks = tasks.filter((task) => {
-                if (currentFilter === "all") {
-                    return true
-                }
-                return task.category === currentFilter
-
-            })
-            renderTasks(filteredTasks)
+            renderTasks(getFilteredTasks())
         }
     }
 
@@ -216,29 +217,66 @@ function handleEditButton(event, task) {
 
         editWarningText.textContent = "" // Clear the edit warning once the edit is submitted
 
-        let filteredTasks = tasks.filter((task) => {
-            if (currentFilter === "all") {
-                return true
-            }
-            return task.category === currentFilter
-
-        })
-        renderTasks(filteredTasks)
+        renderTasks(getFilteredTasks())
     }
 }
 
-const editWarning = document.querySelector("#edit-warning")
-const editWarningText = document.querySelector("#edit-warning p")
 
 
-function editWarningFunction() {
-    editWarningText.textContent = "Finish editing the current task first before editing another task."
+// FILTERING
 
+function getFilteredTasks() {
+    if (currentFilter === "all") {
+        return tasks
+    }
+    return tasks.filter((each) => {
+        return each.category === currentFilter
+    })
 }
 
-function switchingFiltersWarning() {
-    editWarningText.textContent = "Finish editing the current task first before switching filters."
+filters.addEventListener("click", (event) => {
+    if (event.target.tagName === "BUTTON") {
+        handleEditInProgress(event)
+        handleFilterButtons(event)
+    }
+})
 
+function handleFilterButtons(event) {
+
+    // Checking whether there are edits in progress
+    for (let i = 0; i < tasks.length; i++) {
+        if (tasks[i].edit === true) {
+            return
+        }
+    }
+
+    let filteredArr;
+
+    if (event.target.classList.contains("complete-btn")) {
+        currentFilter = "completed"
+
+        filteredArr = tasks.filter((task) => {
+            return task.category === "completed"
+        })
+    }
+
+    if (event.target.classList.contains("active-btn")) {
+        currentFilter = "active"
+
+        filteredArr = tasks.filter((task) => {
+            return task.category === "active"
+        })
+    }
+
+    if (event.target.classList.contains("all-btn")) {
+        currentFilter = "all"
+
+        filteredArr = tasks.filter((task) => {
+            return true
+        })
+    }
+
+    renderTasks(filteredArr)
 }
 
 function handleEditInProgress(event) {
@@ -249,18 +287,40 @@ function handleEditInProgress(event) {
             check = true
         }
     }
-        if (check === false) {
-            return
-        }
 
-    
-    if (event.target.classList.contains("all-btn") ||
-        event.target.classList.contains("active-btn") ||
-        event.target.classList.contains("complete-btn")) {
-            switchingFiltersWarning()
-
-        }
+    if (check === false) {
+        return
     }
 
+    if (
+        event.target.classList.contains("all-btn") ||
+        event.target.classList.contains("active-btn") ||
+        event.target.classList.contains("complete-btn")
+    ) {
+        switchingFiltersWarning()
+    }
+}
 
 
+// UI MESSAGES
+
+function editWarningFunction() {
+    editWarningText.textContent =
+        "Finish editing the current task first before editing another task."
+}
+
+function switchingFiltersWarning() {
+    editWarningText.textContent =
+        "Finish editing the current task first before switching filters."
+}
+
+
+// LOCAL STORAGE
+
+function saveTasks() {
+    localStorage.setItem("tasks", JSON.stringify(tasks))
+}
+
+function saveTaskId() {
+    localStorage.setItem("taskId", taskId)
+}

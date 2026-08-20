@@ -65,7 +65,7 @@ button {
 
 .task {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) auto auto auto;
+    grid-template-columns: minmax(0, 1fr) auto auto auto auto;
     align-items: center;
     gap: 10px;
 
@@ -89,7 +89,7 @@ button {
 }
 
 .red-color {
-    color: rgb(237, 49, 49);
+    color: rgb(252, 95, 95);
 }
 
 #edit-warning {
@@ -98,4 +98,25 @@ button {
     font-size: large;
     min-height: 24px;
 
+}
+
+.due-normal {
+    color: #555;
+}
+
+.due-soon {
+    color: #ff6b0f;
+}
+
+.due-urgent {
+    color: #d97706;
+}
+
+.due-today {
+    color: #dc2626;
+}
+
+.due-overdue {
+    color: #991b1b;
+    font-weight: 600;
 }
