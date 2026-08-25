@@ -36,11 +36,26 @@ if (localStorage.getItem("taskId") !== null) {
 // TASK CREATION
 
 addButton.addEventListener("click", (event) => {
+    if (handleValidity(taskInput)) {
     let taskText = taskInput.value
     createTask(taskText)
     renderTasks(tasks)
     taskInput.value = ""
+    }
 })
+
+taskInput.addEventListener("input", (event) => {
+    handleValidity(taskInput)
+})
+
+function handleValidity(input) {
+    input.setCustomValidity("")
+
+    if (input.validity.tooShort) {
+        input.setCustomValidity("task needs to be at least two characters.")
+    }
+    return input.reportValidity()
+}
 
 function createTask(taskText) {
     taskId++
@@ -70,8 +85,19 @@ function handleDate(task) {
     if (Number.isNaN(difference)) {
         return ""
     }
+    
+    handleDefaultDate(currentDateObj)
+
     return (difference / 1000 / 60 / 60 / 24)
 
+}
+
+function handleDefaultDate(currentDateObj) {
+    let currentDateString = [currentDateObj.getFullYear(), String(currentDateObj.getMonth() + 1).padStart(2, "0"), currentDateObj.getDate()].join("-");
+    dateInput.value = currentDateString
+    dateInput.min = currentDateString
+    
+    
 }
 
 function handleDateMessage(day) {
