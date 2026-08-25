@@ -6,6 +6,9 @@
     box-sizing: border-box;
 }
 
+
+/* PAGE LAYOUT */
+
 body {
     font-family: system-ui, sans-serif;
     background: #f5f5f5;
@@ -21,11 +24,17 @@ h1 {
     margin-bottom: 25px;
 }
 
+
+/* TASK MANAGER */
+
 .task-manager {
     background: white;
     padding: 25px;
     border: 1px solid #ddd;
 }
+
+
+/* TASK INPUT */
 
 .task-input {
     display: flex;
@@ -38,11 +47,17 @@ h1 {
     border: 0.3px solid black;
 }
 
+
+/* BUTTONS */
+
 button {
     padding: 10px 15px;
     cursor: pointer;
     border: 0.3px solid black;
 }
+
+
+/* TASK LIST */
 
 #task-list {
     margin: 20px 0;
@@ -51,6 +66,9 @@ button {
 #task-list div {
     border: 0.3px solid black;
 }
+
+
+/* CONTROLS AND FILTERS */
 
 .controls {
     display: flex;
@@ -62,6 +80,9 @@ button {
     display: flex;
     gap: 10px;
 }
+
+
+/* TASKS */
 
 .task {
     display: grid;
@@ -80,25 +101,18 @@ button {
     overflow-wrap: break-word;
 }
 
-.yellow-color {
-    background-color: rgba(253, 253, 41, 0.496);
-}
 
-.green-color {
-    background-color: rgba(174, 255, 53, 0.383);
-}
-
-.red-color {
-    color: rgb(252, 95, 95);
-}
+/* EDIT WARNING */
 
 #edit-warning {
     text-align: center;
     padding-top: 15px;
     font-size: large;
     min-height: 24px;
-
 }
+
+
+/* DUE DATE COLORS */
 
 .due-normal {
     color: #555;
@@ -122,6 +136,8 @@ button {
 }
 
 
+/* SEARCH */
+
 .search-container {
     margin-top: 10px;
 }
@@ -132,6 +148,8 @@ button {
     border: 0.3px solid black;
 }
 
+
+/* SORTING */
 
 .sort-container {
     display: flex;
@@ -144,4 +162,23 @@ button {
     padding: 8px;
     border: 0.3px solid black;
     cursor: pointer;
+}
+
+
+/* BUTTON COLORS */
+
+.active-btn {
+    color: green;
+}
+
+.complete-btn {
+    color: green;
+}
+
+.delete-btn {
+    color: red;
+}
+
+.edit-btn {
+    color: orange;
 }

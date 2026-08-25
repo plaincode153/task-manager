@@ -13,9 +13,6 @@ let tasks = []
 let taskId = 0
 
 let currentFilter = "all"
-let currentSearch = ""
-
-
 
 
 // LOAD SAVED DATA
@@ -37,10 +34,10 @@ if (localStorage.getItem("taskId") !== null) {
 
 addButton.addEventListener("click", (event) => {
     if (handleValidity(taskInput)) {
-    let taskText = taskInput.value
-    createTask(taskText)
-    renderTasks(tasks)
-    taskInput.value = ""
+        let taskText = taskInput.value
+        createTask(taskText)
+        renderTasks(getVisibleTasks())
+        taskInput.value = ""
     }
 })
 
@@ -65,40 +62,39 @@ function createTask(taskText) {
         task: taskText,
         category: "active",
         id: taskId,
-        due: dateInput.value
+        due: dateInput.value,
+        edit: false
     })
 
     saveTasks()
 }
 
 
-// TASK RENDERING
+// DATE AND TIME MANAGEMENT
 
 function handleDate(task) {
 
     let dueDateParts = task.due.split("-")
     let currentDateObj = new Date()
     currentDateObj.setHours(0, 0, 0, 0)
-    dueDateObj = new Date(dueDateParts[0], dueDateParts[1] - 1, dueDateParts[2])
+    let dueDateObj = new Date(dueDateParts[0], dueDateParts[1] - 1, dueDateParts[2])
 
     let difference = dueDateObj - currentDateObj
     if (Number.isNaN(difference)) {
         return ""
     }
-    
-    handleDefaultDate(currentDateObj)
 
-    return (difference / 1000 / 60 / 60 / 24)
-
+    return Math.round(difference / 1000 / 60 / 60 / 24)
 }
 
-function handleDefaultDate(currentDateObj) {
-    let currentDateString = [currentDateObj.getFullYear(), String(currentDateObj.getMonth() + 1).padStart(2, "0"), currentDateObj.getDate()].join("-");
+function handleDefaultDate() {
+    let dateObj = new Date()
+    let currentDateString = [dateObj.getFullYear(), String(dateObj.getMonth() + 1).padStart(2, "0"), String(dateObj.getDate()).padStart(2, "0")].join("-")
     dateInput.value = currentDateString
     dateInput.min = currentDateString
-    
-    
 }
+
+handleDefaultDate()
 
 function handleDateMessage(day) {
     if (day === "") {
@@ -124,46 +120,42 @@ function handleDateMessage(day) {
     }
 }
 
-
-
+// TASK RENDERING
 
 function renderTasks(arrayToRender) {
     let taskHTML = arrayToRender.map((task) => {
-        let colorClass;
-        let buttonClass;
-        let buttonText;
+
+        let btnClass;
+        let text;
 
         if (task.category === "active") {
-            colorClass = "green-color"
-            buttonClass = "complete-btn"
-            buttonText = "Complete"
+            text = "Complete"
+            btnClass = "complete-btn"
         }
-
         if (task.category === "completed") {
-            colorClass = "yellow-color"
-            buttonClass = "undo-btn"
-            buttonText = "Undo"
+            text = "Undo"
+            btnClass = "undo-btn"
         }
 
         if (task.edit === true) {
             return `
-            <div id="${task.id}" class="task ${colorClass}">
-                <input value="${task.task}" type="text">
+            <div id="${task.id}" class="task">
+                <input required minlength="2" value="${task.task}">
                 ${handleDateMessage(handleDate(task))}
                 <button class="delete-btn">Delete</button>
                 <button class="submit-btn">Submit</button>
-                <button class="${buttonClass}">${buttonText}</button>
+                <button class="${btnClass}">${text}</button>
             </div>
         `
         }
 
         return `
-            <div id="${task.id}" class="task ${colorClass}">
+            <div id="${task.id}" class="task">
                 <p>${task.task}</p>
                 ${handleDateMessage(handleDate(task))}
                 <button class="delete-btn">Delete</button>
                 <button class="edit-btn">Edit</button>
-                <button class="${buttonClass}">${buttonText}</button>
+                <button class="${btnClass}">${text}</button>
             </div>
         `
     })
@@ -171,9 +163,48 @@ function renderTasks(arrayToRender) {
     taskList.innerHTML = taskHTML.join("")
 }
 
+// VISIBLE TASKS 
 
-// TASK ACTIONS
+function getVisibleTasks() {
+    // active, completed, and all filters
+    let visibleTasks = tasks.filter((each) => {
+        if (currentFilter === "all") {
+            return true
+        }
+        return each.category === currentFilter
+    })
 
+    handleSorting(visibleTasks)
+
+    visibleTasks = handleSearch(visibleTasks)
+
+    return visibleTasks
+}
+
+filters.addEventListener("click", (event) => {
+    if (tasks.some((task) => task.edit === true)) {
+        switchWarningFunction()
+        return
+    }
+    handleFilterButtons(event)
+})
+
+function handleFilterButtons(event) {
+
+    if (event.target.classList.contains("complete-btn")) {
+        currentFilter = "completed"
+    }
+    if (event.target.classList.contains("active-btn")) {
+        currentFilter = "active"
+    }
+    if (event.target.classList.contains("all-btn")) {
+        currentFilter = "all"
+    }
+
+    renderTasks(getVisibleTasks())
+}
+
+// task list buttons 
 
 taskList.addEventListener("click", (event) => {
     if (event.target.tagName === "BUTTON") {
@@ -181,217 +212,125 @@ taskList.addEventListener("click", (event) => {
     }
 })
 
-let findTask = (event) => {
-    let taskElement = event.target.closest(".task")
-
-    return tasks.find((task) => {
-        return task.id === Number(taskElement.id)
-    })
-}
-
 function handleTaskButton(event) {
-    let task = findTask(event)
+
+    // finding the task via the html
+    let HTMLtask = event.target.closest(".task")
+    let task = tasks.find((task) => {
+        return task.id === Number(HTMLtask.id)
+    })
 
     if (event.target.classList.contains("undo-btn")) {
         task.category = "active"
-        renderTasks(tasks)
     }
 
     if (event.target.classList.contains("complete-btn")) {
         task.category = "completed"
-        renderTasks(tasks)
     }
 
     if (event.target.classList.contains("delete-btn")) {
         let index = tasks.findIndex((each) => {
             return task.id === each.id
         })
-
         tasks.splice(index, 1)
-
-        renderTasks(getFilteredTasks())
     }
 
-    handleEditButton(event, task)
+    // editing
 
+    let input = HTMLtask.querySelector("input")
+
+    if (event.target.classList.contains("submit-btn")) {
+        if (!handleValidity(input)) {
+            return;
+        }
+        task.edit = false;
+        task.task = input.value
+        editWarningText.textContent = ""
+    }
+    for (let i = 0; i < tasks.length; i++) {
+        if (tasks[i].edit === true) {
+            editWarningFunction()
+            return;
+        }
+    }
+    if (event.target.classList.contains("edit-btn")) {
+        task.edit = true
+    }
+
+
+    renderTasks(getVisibleTasks())
     saveTasks()
 }
 
-// EDITING
+// due soonest-latest sorting
 
-function handleEditButton(event, task) {
-
-    if (event.target.classList.contains("edit-btn")) {
-
-        let duplicate = false
-
-        for (let i = 0; i < tasks.length; i++) {
-            if (tasks[i].edit === true) {
-                duplicate = true
-                editWarningFunction()
-                break
-            }
-        }
-        if (duplicate === false) {
-            task.edit = true
-            renderTasks(getFilteredTasks())
-        }
+sortSelection.addEventListener("change", () => {
+    if (tasks.some((task) => task.edit === true)) {
+        switchWarningFunction()
+        return
     }
-
-    if (event.target.classList.contains("submit-btn")) {
-        let HTMLtask = event.target.closest(".task")
-        let input = HTMLtask.querySelector("input")
-        task.task = input.value
-        task.edit = false
-
-        editWarningText.textContent = "" // Clear the edit warning once the edit is submitted
-
-        renderTasks(getFilteredTasks())
-    }
-}
-
-
-
-// FILTERING
-
-let sorting = "default"
-
-sortSelection.addEventListener("change", (event) => {
-    sorting = event.target.value
-    handleSorting()
-    renderTasks(getFilteredTasks())
+    renderTasks(getVisibleTasks())
 })
+function handleSorting(visibleTasks) {
 
-function handleSorting() {
-    if (sorting === "default") {
-        tasks.sort((a, b) => {
+    let option = sortSelection.value
+
+    if (option === "default") {
+        visibleTasks.sort((a, b) => {
             return a.id - b.id
         });
     }
-    if (sorting === "due-soonest") {
-        tasks.sort((a, b) => {
-            if (a.due > b.due) {
-                return -1
-            }
-            if (a.due < b.due) {
-                return 1
-            }
-        })
-    }
-    if (sorting === "due-latest") {
-        tasks.sort((a, b) => {
+    if (option === "due-soonest") {
+        visibleTasks.sort((a, b) => {
             if (a.due > b.due) {
                 return 1
             }
             if (a.due < b.due) {
                 return -1
             }
+            return 0
+        })
+    }
+    if (option === "due-latest") {
+        visibleTasks.sort((a, b) => {
+            if (a.due > b.due) {
+                return -1
+            }
+            if (a.due < b.due) {
+                return 1
+            }
+            return 0
         })
     }
 }
 
+// searching 
 
-
-searchInput.addEventListener("input", (event) => {
-    currentSearch = event.target.value
-    renderTasks(handleCurrentSearch())
+searchInput.addEventListener("input", () => {
+    renderTasks(getVisibleTasks())
 })
 
-function handleCurrentSearch() {
-    if (currentFilter === "all") {
-        return tasks.filter((each) => {
-            return each.task.toLowerCase().includes(currentSearch.toLowerCase())
-        })
+function handleSearch(visibleTasks) {
+    if (searchInput.value === "") {
+        return visibleTasks
+
     }
-    let filteredTasks = tasks.filter((each) => {
-        return each.category === currentFilter
-    })
-    return filteredTasks.filter((each) => {
-        return each.task.toLowerCase().includes(currentSearch.toLowerCase())
+    return visibleTasks.filter((task) => {
+        return task.task.toLowerCase().includes(searchInput.value.toLowerCase())
     })
 }
-
-function getFilteredTasks() {
-
-    if (currentSearch.length > 0) {
-        return handleCurrentSearch()
-    }
-
-    if (currentFilter === "all") {
-        return tasks
-    }
-    return tasks.filter((each) => {
-        return each.category === currentFilter
-    })
-}
-
-filters.addEventListener("click", (event) => {
-    if (event.target.tagName === "BUTTON") {
-        handleEditInProgress(event)
-        handleFilterButtons(event)
-    }
-})
-
-function handleFilterButtons(event) {
-
-    // Checking whether there are edits in progress
-    for (let i = 0; i < tasks.length; i++) {
-        if (tasks[i].edit === true) {
-            return
-        }
-    }
-
-    if (event.target.classList.contains("complete-btn")) {
-        currentFilter = "completed"
-    }
-
-    if (event.target.classList.contains("active-btn")) {
-        currentFilter = "active"
-    }
-
-    if (event.target.classList.contains("all-btn")) {
-        currentFilter = "all"
-    }
-
-    renderTasks(getFilteredTasks()
-    )
-}
-
-function handleEditInProgress(event) {
-    let check = false
-
-    for (let i = 0; i < tasks.length; i++) {
-        if (tasks[i].edit === true) {
-            check = true
-        }
-    }
-
-    if (check === false) {
-        return
-    }
-
-    if (
-        event.target.classList.contains("all-btn") ||
-        event.target.classList.contains("active-btn") ||
-        event.target.classList.contains("complete-btn")
-    ) {
-        switchingFiltersWarning()
-    }
-}
-
 
 // UI MESSAGES
+
+function switchWarningFunction() {
+    editWarningText.textContent =
+        "Finish editing before changing filters or sort by."
+}
 
 function editWarningFunction() {
     editWarningText.textContent =
         "Finish editing the current task first before editing another task."
 }
-
-function switchingFiltersWarning() {
-    editWarningText.textContent =
-        "Finish editing the current task first before switching filters."
-}
-
 
 // LOCAL STORAGE
 
