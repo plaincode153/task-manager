@@ -1,4 +1,3 @@
-const taskInputContainer = document.querySelector(".task-input")
 const taskInput = document.querySelector("#task-input")
 const addButton = document.querySelector("#add-btn")
 const taskList = document.querySelector("#task-list")
@@ -135,7 +134,7 @@ handleDefaultDate()
 
 function renderTasks(arrayToRender) {
     taskList.textContent = ""
-    let taskHTML = arrayToRender.forEach((task) => {
+    arrayToRender.forEach((task) => {
 
         let btnClass;
         let text;
@@ -178,7 +177,7 @@ function renderTasks(arrayToRender) {
 
         if (task.edit === true) {
             paragraphOrInput = document.createElement("input")
-            paragraphOrInput.required
+            paragraphOrInput.required = true
             paragraphOrInput.minLength = 2
             paragraphOrInput.value = task.task
             submitOrEditButton.classList.add("submit-btn")
