@@ -15,8 +15,9 @@ body {
 }
 
 main {
-    width: 800px;
+    width: 90%;
     margin: 80px auto;
+    max-width: 800px;
 }
 
 h1 {
@@ -181,4 +182,10 @@ button {
 
 .edit-btn {
     color: orange;
+}
+
+@media (max-width: 600px) {
+    .task {
+        grid-template-columns: 1fr;
+    }
 }

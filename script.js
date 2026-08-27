@@ -178,6 +178,8 @@ function renderTasks(arrayToRender) {
 
         if (task.edit === true) {
             paragraphOrInput = document.createElement("input")
+            paragraphOrInput.required
+            paragraphOrInput.minLength = 2
             paragraphOrInput.value = task.task
             submitOrEditButton.classList.add("submit-btn")
             submitOrEditButton.textContent = `Submit`
