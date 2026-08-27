@@ -87,6 +87,40 @@ function handleDate(task) {
     return Math.round(difference / 1000 / 60 / 60 / 24)
 }
 
+function handleDateElement(day) {
+    let paragraphDate = document.createElement("p")
+
+    if (day === "") {
+        paragraphDate.className = ""
+        paragraphDate.textContent("")
+    }
+    if (day > 7) {
+        paragraphDate.classList.add("due-normal")
+        paragraphDate.textContent = `Due in ${day} days`
+    }
+    if (day === 7) {
+        paragraphDate.classList.add("due-normal")
+        paragraphDate.textContent = `Due in ${day} days`
+    }
+    if (day > 0 && day < 7) {
+        paragraphDate.classList.add("due-normal")
+        paragraphDate.textContent = `Due in ${day} days`
+    }
+    if (day === 0) {
+        paragraphDate.classList.add("due-normal")
+        paragraphDate.textContent = `Due today`
+    }
+    if (day === -1) {
+        paragraphDate.classList.add("due-normal")
+        paragraphDate.textContent = `overdue by 1 day`
+    }
+    if (day < -1) {
+        paragraphDate.classList.add("due-normal")
+        paragraphDate.textContent = `overdue by ${Math.abs(day)} days`
+    }
+    return paragraphDate
+}
+
 function handleDefaultDate() {
     let dateObj = new Date()
     let currentDateString = [dateObj.getFullYear(), String(dateObj.getMonth() + 1).padStart(2, "0"), String(dateObj.getDate()).padStart(2, "0")].join("-")
@@ -96,34 +130,12 @@ function handleDefaultDate() {
 
 handleDefaultDate()
 
-function handleDateMessage(day) {
-    if (day === "") {
-        return ""
-    }
-    if (day > 7) {
-        return `<p class="due-normal">Due in ${day} days</p>`
-    }
-    if (day === 7) {
-        return `<p class="due-soon">Due in ${day} days</p>`
-    }
-    if (day > 0 && day < 7) {
-        return `<p class="due-urgent">Due in ${day} days</p>`
-    }
-    if (day === 0) {
-        return `<p class="due-today">Due today!</p>`
-    }
-    if (day === -1) {
-        return `<p class="due-today">${Math.abs(day)} day overdue!</p>`
-    }
-    if (day < -1) {
-        return `<p class="due-today">${Math.abs(day)} days overdue!</p>`
-    }
-}
 
 // TASK RENDERING
 
 function renderTasks(arrayToRender) {
-    let taskHTML = arrayToRender.map((task) => {
+    taskList.textContent = ""
+    let taskHTML = arrayToRender.forEach((task) => {
 
         let btnClass;
         let text;
@@ -137,31 +149,45 @@ function renderTasks(arrayToRender) {
             btnClass = "undo-btn"
         }
 
-        if (task.edit === true) {
-            return `
-            <div id="${task.id}" class="task">
-                <input required minlength="2" value="${task.task}">
-                ${handleDateMessage(handleDate(task))}
-                <button class="delete-btn">Delete</button>
-                <button class="submit-btn">Submit</button>
-                <button class="${btnClass}">${text}</button>
-            </div>
-        `
+
+        let div = document.createElement("div")
+        div.classList.add("task")
+        div.id = task.id
+
+        let paragraphOrInput
+
+        let paragraphDate = handleDateElement(handleDate(task))
+
+        let deleteButton = document.createElement("button")
+        deleteButton.classList.add("delete-btn")
+        deleteButton.textContent = "Delete"
+
+        let submitOrEditButton = document.createElement("button")
+
+        let completeUndoButton = document.createElement("button")
+        completeUndoButton.classList.add(`${btnClass}`)
+        completeUndoButton.textContent = text
+
+        if (task.edit === false) {
+            paragraphOrInput = document.createElement("p")
+            paragraphOrInput.textContent = task.task
+            submitOrEditButton.classList.add("edit-btn")
+            submitOrEditButton.textContent = "Edit"
+
         }
 
-        return `
-            <div id="${task.id}" class="task">
-                <p>${task.task}</p>
-                ${handleDateMessage(handleDate(task))}
-                <button class="delete-btn">Delete</button>
-                <button class="edit-btn">Edit</button>
-                <button class="${btnClass}">${text}</button>
-            </div>
-        `
-    })
+        if (task.edit === true) {
+            paragraphOrInput = document.createElement("input")
+            paragraphOrInput.value = task.task
+            submitOrEditButton.classList.add("submit-btn")
+            submitOrEditButton.textContent = `Submit`
+        }
 
-    taskList.innerHTML = taskHTML.join("")
+        div.append(paragraphOrInput, paragraphDate, deleteButton, submitOrEditButton, completeUndoButton)
+        taskList.append(div)
+    })
 }
+
 
 // VISIBLE TASKS 
 
